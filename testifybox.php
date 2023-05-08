@@ -38,7 +38,9 @@ add_action( 'init','testifybox_custom_post_type' );
 
 
 /**
- * register taxonomy
+ * Register 'Testimonial Categories' Taxonomy
+ * 
+ * @return void
  */
 function testifybox_new_taxonomy(){
     $labels = array(
@@ -68,16 +70,16 @@ add_action( 'init', 'testifybox_new_taxonomy' );
 
 
 /**
- * register client details metabox
+ * Register 'Client Details' Metabox
  */
 function testifybox_new_metabox(){
     add_meta_box( 'clientdetails_id', 'Client Details', 'testifybox_new_metabox_callback', 'testifybox' );
 }
 add_action( 'add_meta_boxes', 'testifybox_new_metabox' );
 
+
 /**
- * add html form to metabox and get post meta
- * Callback for client details metabox
+ * Callback for 'Client Details' Metabox
  * 
  * @param WP_Post $post Post Object. 
  */
@@ -117,8 +119,11 @@ function testifybox_new_metabox_callback( $post ){
     
 }
 
+
 /**
- * save post meta
+ * Save Post Meta
+ * 
+ * @param $post_id $_POST
  */
 function testifybox_save_postdata( $post_id ){
 
@@ -135,10 +140,14 @@ function testifybox_save_postdata( $post_id ){
 }
 add_action( 'save_post', 'testifybox_save_postdata' );
 
+
 /**
- * Shortcode to display client details
+ * Shortcode to display 'Client Details'
+ * 
+ * @param $atts
+ * @return $result
  */
-function testifybox_shortcode($atts)
+function testifybox_shortcode( $atts )
 {
         $args = array(
             'post_type'      => 'testifybox',
@@ -190,7 +199,9 @@ add_shortcode('clientdetails_list','testifybox_shortcode');
 
 
 /**
- * display meta key/fields in backend table
+ * Displays meta key/fields in admin table
+ * 
+ * @return $column
  */
 function testifybox_column_page( $column ){
 
@@ -203,8 +214,9 @@ function testifybox_column_page( $column ){
 }
 add_filter( 'manage_testifybox_posts_columns', 'testifybox_column_page' );
 
+
 /**
- * display meta data/values
+ * Display meta key/fields in admin table
  */
 function testifybox_column_value( $column_name, $post_ID ) {
     $custom_field_values = get_post_meta( $post_ID,'clientdetails', true );
@@ -229,11 +241,11 @@ function testifybox_column_value( $column_name, $post_ID ) {
 add_action('manage_testifybox_posts_custom_column','testifybox_column_value',10,2);
   
 
-
 /**
- * shortcode to display all the testimonials list
+ * Shortcode to display all the testimonials list
+ * 
+ * @return $result
  */
-
 function testifybox_shortcode_lists(){
     $args = array(
         'post_type'      => 'testifybox',
@@ -288,6 +300,7 @@ function testifybox_shortcode_lists(){
                 <?php
                 }
         }
+        wp_reset_postdata();
     }else{
         echo 'No Testimonials Found.';
     }
@@ -303,13 +316,15 @@ add_shortcode( 'all_testimonail_list','testifybox_shortcode_lists' );
 
 
 /**
- * shortcode with arguments
- * to display testimonials according to category
+ * 
+ * Shortcode to display testimonials according to category
+ * 
+ * @param $atts
+ * @return $result
  */
-
  function testifybox_category_display( $atts ){
 
-	// override default attributes with user attributes
+	// Override default attributes with user attributes.
 	$short_args = shortcode_atts(
 		array(
             'categories' => '',
@@ -393,10 +408,11 @@ add_shortcode( 'all_testimonail_list','testifybox_shortcode_lists' );
  add_shortcode( 'category_testinomial', 'testifybox_category_display'  );
 
 
- /**
-  * display using slider
-  */
-
+  /**
+   * Shortcode to display view as slider
+   * 
+   * @return $result
+   */
 function testifybox_slider(){
     $args = array(
         'post_type'      => 'testifybox',
@@ -424,24 +440,24 @@ add_shortcode( 'testimonial_slider', 'testifybox_slider' );
 
 
 /**
- * create submenu
+ * Creates submenu 'Easy Settings'
  */
-
 function testifybox_add_sub_menu(){
     
     add_submenu_page(
-        'edit.php?post_type=testifybox', //parent slug
-        'Easy Settings', //page title
-        'Easy Settings', //menu title
-        'manage_options', //roles and capability needed
-        'easy_setting',  //menu slug
-        'testifybox_menu_option',  //callback function
+        'edit.php?post_type=testifybox', //parent slug.
+        'Easy Settings', //page title.
+        'Easy Settings', //menu title.
+        'manage_options', //roles and capability needed.
+        'easy_setting',  //menu slug.
+        'testifybox_menu_option',  //callback function.
     );
 }
 add_action( 'admin_menu', 'testifybox_add_sub_menu' );
 
+
 /**
- * callback function for sub menu
+ * Callback function for sub menu 'Easy Settings'
  * testifybox_menu_option
  */
 function testifybox_menu_option(){
@@ -485,8 +501,11 @@ function testifybox_menu_option(){
     
 }
 
+
 /**
- * Save values to DB
+ * Saves values to DB 'wp_option' table
+ * 
+ * @param $_POST
  */
 function testifybox_save_setings(){
     if(isset($_POST['save_settings']))
@@ -501,16 +520,16 @@ function testifybox_save_setings(){
         $postdata['rating_check'] = ( ( isset($_POST['rating_check']) ) ? '1' : '0' );
 
         update_option( 'save_value', $postdata );
-
     }
 }
 add_action( 'admin_init', 'testifybox_save_setings' );
 
 
-
 /**
- * testimonial submission form
- *  allows website visitors to submit their testimonials using a form
+ * Testimonial form submission
+ * Allows website visitors to submit their testimonials using a form
+ * 
+ * @return $result
  */
 function testifybox_form(){
 
@@ -571,7 +590,9 @@ add_shortcode( 'add_testimonial', 'testifybox_form' );
 
 
 /**
- * save testimonial form
+ * Save testimonial form data to database in wp_post and wp_postmeta table
+ * 
+ * @param $_POST
  */
 function testifybox_save_form(){
     
@@ -595,7 +616,7 @@ function testifybox_save_form(){
             'post_content' => $testimonial_textarea,
             'post_status' => 'publish',
             'post_type' => 'testifybox',
-            'meta_input' => $postdata,
+            'meta_input' => $postdata, //wp_postmeta values.
         );
 
         $save_testimonial = wp_insert_post($args);
@@ -605,16 +626,13 @@ function testifybox_save_form(){
             wp_redirect( home_url( $_POST['_wp_http_referer'] ) );
             die;
         }
-
     }
-
 }
 add_action( 'init', 'testifybox_save_form' );
 
 
-
 /**
- * display meta data/values
+ * displays meta data/values to admin table
  */
 function testifybox_new_column_value( $column_name, $post_ID ) {
     if ($column_name == 'fname') {
@@ -638,37 +656,37 @@ add_action( 'manage_testifybox_posts_custom_column', 'testifybox_new_column_valu
   
 
 /**
- * stylesheet
- * bootstrap CDN
- * swiper slider cdn
+ * enqueue stylesheet, script, bootstrap CDN, swiper slider cdn
  */
 function testifybox_stylesheet() 
 {
-    //custom css
+    //custom css.
     wp_enqueue_style( 'myCSS', plugins_url( 'assets/css/testifybox-style.css', __FILE__ ) );
 
-    //bootstrap cdn
+    //bootstrap cdn.
     wp_enqueue_style( 'myplugin-style', 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' );
     wp_enqueue_script( 'myplugin-script', 'https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js', null, null, true );
 
-    //jquery 
+    //jquery cdn.
     wp_enqueue_script( 'ajax-script', 'https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js', null, null, true );
 
-    //swiper slider cdn
+    //swiper slider cdn.
     wp_enqueue_style( 'swipercss-cdn', 'https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css' );
     wp_enqueue_script( 'swiperjs_cdn', 'https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js', null, null, true );
 
-    //custom js
+    //custom js.
     wp_enqueue_script( 'myScript', plugins_url( 'assets/js/testifybox-script.js', __FILE__ ), array(), null, true );
 
 }
-
 add_action( 'wp_enqueue_scripts', 'testifybox_stylesheet' );
 
 
 /**
- * testimonial display option shortcode
+ * Testimonial display option shortcode
  * grid view, slider view, list view
+ * 
+ * @param $atts
+ * @return $result
  */
 function testifybox_display_option( $atts ){
 
