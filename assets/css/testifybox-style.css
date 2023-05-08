@@ -1,0 +1,81 @@
+
+/** table display css*/
+#table-css {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid;
+    width: 100%;
+}
+  
+#table-css td, #table-css th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+  
+#table-css tr:nth-child(even){background-color: #f2f2f2;}
+  
+#table-css tr:hover {background-color: #ddd;}
+  
+#table-css th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: center;
+  background-color: #04AA6D;
+  color: white;
+}
+
+
+/** testimonial display shortcode css */
+.testimonial_css{
+  padding: 20px 20px 25px 0px;
+}
+
+.card_css{
+  border-radius: 10px !important;
+  border: 1px solid black !important;
+  color: black;
+}
+.img_avatar{
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid black;
+}
+
+
+/* swiper slider */
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* star rating */
+.stars input[type="radio"] {
+  display: none;
+}
+.stars label.star:before {
+  content: '\2605';
+  font-size: 30px;
+  color: gray;
+}
+.stars input[type="radio"]:checked + label.star:before {
+  color: gold;
+}
