@@ -1,8 +1,8 @@
 <div class="col-md-6 testimonial_css">
     <div class="card bg-light card_css" >
         <div class="card-body">
-            <h5 class="card-title"><?php echo get_the_title(); ?></h5><hr>
-            <?php echo get_the_content(); ?>
+            <h5 class="card-title"><?php echo the_title(); ?></h5><hr>
+            <?php echo the_content(); ?>
             <div class="card-footer">
                 <div class="row">
                     <div class="col-md-4">
@@ -20,11 +20,11 @@
                     </div>
                     <div class="col-md-8">
                         <?php
-                            if ( $get_selected_option['name_check'] || $get_selected_option['email_check'] || $get_selected_option['company_name_check'] ) {
+                            if ( isset( $get_selected_option['name_check'] ) || isset( $get_selected_option['email_check'] ) || isset( $get_selected_option['company_name_check'] ) ) {
                                 ?>
-                                    <small class="text-muted"><?php echo $name; ?><br>
-                                        <?php echo $email;  ?><br>
-                                        <b> <?php echo $company_name; ?></b>
+                                    <small class="text-muted"><?php echo esc_html( $name ); ?><br>
+                                        <?php echo esc_html( $email );  ?><br>
+                                        <b> <?php echo esc_html( $company_name ); ?></b>
                                     </small>
                                 <?php
                             }
