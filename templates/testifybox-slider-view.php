@@ -6,7 +6,17 @@
             <div class="card-footer">
                 <div class="row">
                     <div class="col-md-4">
-                        <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                        <?php
+                            if ( get_the_post_thumbnail() ){
+                                ?>
+                                    <?php echo get_the_post_thumbnail(  get_the_ID(), array(100,100), array('class' => "img_avatar") ) ; ?>
+                                <?php
+                            }else{
+                                ?>
+                                    <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                <?php
+                            }
+                        ?>
                     </div>
                     <div class="col-md-8">
                         <?php

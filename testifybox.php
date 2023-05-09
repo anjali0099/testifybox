@@ -31,6 +31,7 @@ function testifybox_custom_post_type() {
         'show_in_rest' => true,
         'menu_position' => null,
         'show_in_menu' => true, 
+        'supports' => array( 'title', 'editor', 'thumbnail' ),
     );
     register_post_type( 'testifybox', $args );
 }
@@ -61,7 +62,6 @@ function testifybox_new_taxonomy(){
         'show_in_rest' => true,
         'show_in_menu' => true,
         'show_admin_column' => true,
-
     );
     register_taxonomy( 'taxonomy-category', ['testifybox'], $args );
 }
@@ -93,21 +93,21 @@ function testifybox_new_metabox_callback( $post ){
         <form method="POST" id="clientdetails" >
             <div class="form-group">
                 <label for="name"><?php _e( 'Full Name', 'testifybox' ) ?></label>
-                <input type="text" id="fname" name="fname" style="width:100%" value="<?php echo esc_attr(! empty( $value['fname'] ) ? $value['fname'] : ''); ?>" >
+                <input type="text" id="fname" name="fname" style="width:100%" value="<?php echo esc_attr( $value['fname'] ); ?>" >
             </div>
             <br>
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email"><?php _e( 'Email', 'testifybox' ) ?></label>
                 <input type="email"  id="email" name="email" style="width:100%" value="<?php echo esc_attr($email); ?>" >
             </div>
             <br>
             <div class="form-group">
-                <label for="company name">Company Name</label>
+                <label for="company name"><?php _e( 'Company Name', 'testifybox' ) ?></label>
                 <input type="text"  id="cname" name="cname" style="width:100%" value="<?php echo esc_attr($cname); ?>" >
             </div>
             <br>
             <div class="form-group">
-                <label for="company website">Company Website</label>
+                <label for="company website"><?php _e( 'Company Website', 'testifybox' ) ?></label>
                 <input type="text"  id="cwebsite" name="cwebsite" style="width:100%" value="<?php echo esc_attr($cwebsite); ?>" >
             </div>
             <?php wp_nonce_field( 'clientdetails_form', 'clientdetails_nonce' ); ?>
@@ -124,6 +124,10 @@ function testifybox_new_metabox_callback( $post ){
  * @return void
  */
 function testifybox_save_postdata( $post_id ){
+    if ( ! isset( $_POST['clientdetails_nonce'] ) ) {
+        return;
+    }
+
     if( ! wp_verify_nonce( $_POST['clientdetails_nonce'], 'clientdetails_form' ) ) {
         return;
     };
@@ -143,8 +147,7 @@ add_action( 'save_post', 'testifybox_save_postdata' );
  * @param array $atts Shortcode attributes.
  * @return $result Shortcode output.
  */
-function testifybox_shortcode( $atts )
-{
+function testifybox_shortcode( $atts ) {
     $args = array(
         'post_type'      => 'testifybox',
         'posts_per_page' => 10,
@@ -157,10 +160,10 @@ function testifybox_shortcode( $atts )
             <div class="col">
                 <table id="table-css">
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Company Name</th>
-                        <th>Company Website</th>
+                        <th> <?php _e( 'Name', 'testifybox' ) ?> </th>
+                        <th> <?php _e( 'Email', 'testifybox' ) ?> </th>
+                        <th> <?php _e( 'Company Name', 'testifybox' ) ?> </th>
+                        <th> <?php _e( 'Company Website', 'testifybox' ) ?> </th>
                     </tr>   
                         <?php 
                         if($query->have_posts()):
@@ -221,7 +224,7 @@ function testifybox_column_value( $column_name, $post_ID ) {
     if(!empty( $custom_field_values )){
         switch ( $column_name ) {
             case "fname":
-                echo $custom_field_values['fname'];
+                echo isset( $custom_field_values['fname'] ) ? $custom_field_values['fname'] : '';
                 break;
             case "email":
                 echo $custom_field_values['email'];
@@ -275,7 +278,17 @@ function testifybox_shortcode_lists(){
                                     <div class="card-footer">
                                         <div class="row">
                                         <div class="col-md-4">
-                                            <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                            <?php
+                                                if ( get_the_post_thumbnail() ){
+                                                    ?>
+                                                        <?php echo get_the_post_thumbnail(  get_the_ID(), array(100,100), array('class' => "img_avatar") ) ; ?>
+                                                    <?php
+                                                }else{
+                                                    ?>
+                                                        <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                                    <?php
+                                                }
+                                            ?>
                                         </div>
                                         <div class="col-md-8">
                                             <?php
@@ -364,7 +377,17 @@ function testifybox_category_display( $atts ){
                                         <div class="card-footer">
                                             <div class="row">
                                             <div class="col-md-4">
-                                                <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                                <?php
+                                                    if ( get_the_post_thumbnail() ){
+                                                        ?>
+                                                            <?php echo get_the_post_thumbnail(  get_the_ID(), array(100,100), array('class' => "img_avatar") ) ; ?>
+                                                        <?php
+                                                    }else{
+                                                        ?>
+                                                            <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                                        <?php
+                                                    }
+                                                ?>
                                             </div>
                                             <div class="col-md-8">
                                                 <?php
@@ -429,29 +452,29 @@ function testifybox_menu_option(){
     ?>
         <div class="container">
             <div class="row">
-            <h1>Easy Enable/Disable</h1>
+            <h1> <?php _e( 'Easy Enable/Disable', 'testifybox' ) ?> </h1>
             <hr>
                 <div class="col">
                 <form method="POST">
                     <div class="form-check">
                         <input type="checkbox" id="name_check" name="name_check" <?php checked( 1, $name_checked );  ?> >
-                        <label class="form-check-label" for="name_check">Enable client name in the view</label>
+                        <label class="form-check-label" for="name_check"> <?php _e( 'Enable client name in the view', 'testifybox' ) ?> </label>
                     </div>
                     <div class="form-check">
                         <input type="checkbox" id="email_check" name="email_check" <?php checked( 1, $email_checked );  ?> >
-                        <label class="form-check-label" for="email_check">Enable client email in the view</label>
+                        <label class="form-check-label" for="email_check"> <?php _e( 'Enable client email in the view', 'testifybox' ) ?> </label>
                     </div>
                     <div class="form-check">
                         <input type="checkbox" id="company_name_check" name="company_name_check" <?php checked( 1, $company_name_checked );  ?> >
-                        <label class="form-check-label" for="company_name_check">Enable company name in the view</label>
+                        <label class="form-check-label" for="company_name_check"> <?php _e( 'Enable company name in the view', 'testifybox' ) ?> </label>
                     </div>
                     <div class="form-check">
                         <input type="checkbox" id="rating_check" name="rating_check" <?php checked( 1, $rating_checked );  ?> >
-                        <label class="form-check-label" for="rating_check">Enable rating in the view</label>
+                        <label class="form-check-label" for="rating_check"> <?php _e( 'Enable rating in the view', 'testifybox' ) ?> </label>
                     </div><br>
                     <?php wp_nonce_field( 'testifybox_setting_form', 'testifybox_setting_nonce' ); ?>
 
-                    <input type="submit" name="save_settings" id="save_settings" value="Save Changes">
+                    <input type="submit" name="testifybox_settings" id="testifybox_settings" value="Save Changes">
                 </form>
                 </div>
             </div>
@@ -465,16 +488,16 @@ function testifybox_menu_option(){
  * @return void
  */
 function testifybox_save_setings(){
-    if(isset($_POST['save_settings']))
+    if( isset( $_POST['testifybox_settings'] ) )
     {
-        if( ! wp_verify_nonce( $_POST['testifybox_setting_nonce'], 'testifybox_setting_form' ) ) {
+        if( ! wp_verify_nonce( wp_unslash( $_POST['testifybox_setting_nonce'] ), 'testifybox_setting_form' ) ) {
             return;
         };
         $postdata = [];
-        $postdata['name_check'] = ( ( isset($_POST['name_check']) ) ? '1' : '0' );
-        $postdata['email_check'] = ( ( isset($_POST['email_check']) ) ? '1' : '0' );
-        $postdata['company_name_check'] = ( ( isset($_POST['company_name_check']) ) ? '1' : '0' );
-        $postdata['rating_check'] = ( ( isset($_POST['rating_check']) ) ? '1' : '0' );
+        $postdata['name_check'] = ( ( isset( $_POST['name_check']) ) ? '1' : '0' );
+        $postdata['email_check'] = ( ( isset( $_POST['email_check'] ) ) ? '1' : '0' );
+        $postdata['company_name_check'] = ( ( isset( $_POST['company_name_check'] ) ) ? '1' : '0' );
+        $postdata['rating_check'] = ( ( isset($_POST['rating_check'] ) ) ? '1' : '0' );
 
         update_option( 'save_value', $postdata );
     }
@@ -492,31 +515,31 @@ function testifybox_form(){
     ?>
     <form method="POST">
         <div class="mb-3">
-            <label for="name" class="form-label">Full Name</label>
+            <label for="name" class="form-label"> <?php _e( 'Full Name', 'testifybox' ) ?> </label>
             <input type="text" class="form-control" id="full_name" name="full_name" required >
         </div>
         <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
+            <label for="email" class="form-label"> <?php _e( 'Email Address', 'testifybox' ) ?> </label>
             <input type="email" class="form-control" id="email_address" name="email_address" required >
         </div>
         <div class="mb-3">
-            <label for="company_name" class="form-label">Company Name</label>
+            <label for="company_name" class="form-label"> <?php _e( 'Company Name', 'testifybox' ) ?> </label>
             <input type="text" class="form-control" id="company_name" name="company_name" required >
         </div>
         <div class="mb-3">
-            <label for="company_website" class="form-label">Company Website</label>
+            <label for="company_website" class="form-label"> <?php _e( 'Company Website', 'testifybox' ) ?> </label>
             <input type="text" class="form-control" id="company_website" name="company_website" required >
         </div>
         <div class="mb-3">
-            <label for="testimonial_heading">Testimonial Heading</label>
+            <label for="testimonial_heading"> <?php _e( 'Testimonial Heading', 'testifybox' ) ?> </label>
             <input type="text" class="form-control" id="testimonial_heading" name="testimonial_heading" required >
         </div>
         <div class="mb-3">
-            <label for="testimonial">Testimonials</label>
+            <label for="testimonial"> <?php _e( 'Testimonials', 'testifybox' ) ?> </label>
             <textarea class="form-control" name="testimonial_textarea" id="testimonial_textarea" style="height: 100px" required ></textarea>
         </div>
         <div class="mb-3">
-            <label for="rating">Rating</label>
+            <label for="rating"> <?php _e( 'Rating', 'testifybox' ) ?> </label>
             <div class="stars">
                 <input class="star" type="radio" id="star1" name="rating" value="1" >
                 <label class="star" for="star1"></label>
@@ -548,9 +571,9 @@ add_shortcode( 'testifybox_testimonial', 'testifybox_form' );
  */
 function testifybox_save_form(){
     
-    if ( isset($_POST['testimonial_form_submit']) ) {
+    if ( isset( $_POST['testimonial_form_submit'] ) ) {
 
-        if( ! wp_verify_nonce( $_POST['testimonial_nonce'], 'testifybox_form' ) ) {
+        if( ! wp_verify_nonce( wp_unslash( $_POST['testimonial_nonce'] ), 'testifybox_form' ) ) {
             return;
         };
         $postdata = [];
