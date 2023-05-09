@@ -76,7 +76,7 @@ function testifybox_new_metabox(){
 add_action( 'add_meta_boxes', 'testifybox_new_metabox' );
 
 /**
- * Callback for 'Client Details' Metabox
+ * Callback for 'Client Details' Metabox.
  * 
  * @param WP_Post $post Post Object. 
  */
@@ -110,34 +110,38 @@ function testifybox_new_metabox_callback( $post ){
                 <label for="company website">Company Website</label>
                 <input type="text"  id="cwebsite" name="cwebsite" style="width:100%" value="<?php echo esc_attr($cwebsite); ?>" >
             </div>
+            <?php wp_nonce_field( 'clientdetails_form', 'clientdetails_nonce' ); ?>
+
             <br>
         </form>
     <?php
 }
 
 /**
- * Save Post Meta
+ * Save Post Meta to wp_postmeta table 'clientdetails' meta_key.
  * 
- * @param array $post_id 
+ * @param array $post_id Post ID.
+ * @return void
  */
 function testifybox_save_postdata( $post_id ){
-    if( (!empty($_POST['fname']) || !empty($_POST['email']) || !empty($_POST['cname']) || !empty($_POST['cwebsite'])) && (isset($_POST['fname']) || isset($_POST['email']) || isset($_POST['cname']) || isset($_POST['cwebsite'])) ){
-        $postdata = [];
-        $postdata['fname'] = sanitize_text_field($_POST['fname']);
-        $postdata['email'] = sanitize_text_field($_POST['email']);
-        $postdata['cname'] = sanitize_text_field($_POST['cname']);
-        $postdata['cwebsite'] = sanitize_text_field($_POST['cwebsite']);
+    if( ! wp_verify_nonce( $_POST['clientdetails_nonce'], 'clientdetails_form' ) ) {
+        return;
+    };
+    $postdata = [];
+    $postdata['fname'] = sanitize_text_field( wp_unslash( $_POST['fname'] ) );
+    $postdata['email'] = sanitize_text_field( wp_unslash( $_POST['email'] ) );
+    $postdata['cname'] = sanitize_text_field( wp_unslash( $_POST['cname'] ) );
+    $postdata['cwebsite'] = sanitize_text_field( wp_unslash( $_POST['cwebsite'] ) );
 
-        update_post_meta( $post_id, 'clientdetails', $postdata );
-    }
+    update_post_meta( $post_id, 'clientdetails', $postdata );
 }
 add_action( 'save_post', 'testifybox_save_postdata' );
 
 /**
- * Shortcode to display 'Client Details'
+ * Shortcode to display 'Client Details' list in table.
  * 
- * @param $atts
- * @return $result
+ * @param array $atts Shortcode attributes.
+ * @return $result Shortcode output.
  */
 function testifybox_shortcode( $atts )
 {
@@ -165,7 +169,7 @@ function testifybox_shortcode( $atts )
 
                                 $value = get_post_meta( get_the_ID(), 'clientdetails', true );
 
-                                if(!empty($value)):
+                                if( !empty($value) ):
                                 ?>
                                     <tr>
                                         <td><?php echo ( isset( $value['fname'] ) ? $value['fname'] : '' ); ?></td>
@@ -187,13 +191,13 @@ function testifybox_shortcode( $atts )
     $result = ob_get_clean();
     return $result;
 }
-add_shortcode('clientdetails_list','testifybox_shortcode');
+add_shortcode('testifybox_clientdetails','testifybox_shortcode');
 
 /**
- * Displays meta key/fields in admin table
+ * Displays meta key/fields in admin table.
  * 
- * @param array $column meta key.
- * @return $column Column values.
+ * @param array $column Meta key.
+ * @return $column Column Values or Meta key.
  */
 function testifybox_column_page( $column ){
 
@@ -209,32 +213,34 @@ add_filter( 'manage_testifybox_posts_columns', 'testifybox_column_page' );
 /**
  * Display meta key/fields in admin table.
  * 
- * @param array $column_name meta key
- * @param array $post_ID post id
+ * @param array $column_name Meta key
+ * @param array $post_ID Post ID
  */
 function testifybox_column_value( $column_name, $post_ID ) {
     $custom_field_values = get_post_meta( $post_ID, 'clientdetails', true );
     if(!empty( $custom_field_values )){
-        if( $column_name == 'fname' ){
-            echo $custom_field_values['fname'];
-        }
-        if( $column_name == 'email' ){
-            echo $custom_field_values['email'];
-        }
-        if( $column_name == 'cname' ){
-            echo $custom_field_values['cname'];
-        }
-        if( $column_name == 'cwebsite' ){
-            echo $custom_field_values['cwebsite'];
+        switch ( $column_name ) {
+            case "fname":
+                echo $custom_field_values['fname'];
+                break;
+            case "email":
+                echo $custom_field_values['email'];
+                break;
+            case "cname":
+                echo $custom_field_values['cname'];
+                break;
+            case "cwebsite":
+                echo $custom_field_values['cwebsite'];
+                break;
         }
     }
 }
 add_action( 'manage_testifybox_posts_custom_column','testifybox_column_value', 10, 2 );
   
 /**
- * Shortcode to display all the testimonials list
+ * Shortcode to display all the testimonials list.
  * 
- * @return $result
+ * @return $result Shortcode output.
  */
 function testifybox_shortcode_lists(){
     $args = array(
@@ -255,40 +261,40 @@ function testifybox_shortcode_lists(){
                 while ( $query->have_posts() ){
                     $query->the_post();
                     $value = get_post_meta( get_the_ID(), 'clientdetails', true );
-                    $full_name = get_post_meta( get_the_ID(), 'full_name', true );
-                    $email_address = get_post_meta( get_the_ID(), 'email_address', true );
-                    $company_name = get_post_meta( get_the_ID(), 'company_name', true );
                 
-                    $name = ( isset( $value['fname'] ) ? $value['fname'] : $full_name );
-                    $email = ( isset( $value['email'] ) ? $value['email'] : $email_address );
-                    $company_name = ( isset( $value['cname'] ) ? $value['cname'] : $company_name );
+                    $name = ( isset( $value['fname'] ) ? $value['fname'] : '' );
+                    $email = ( isset( $value['email'] ) ? $value['email'] : '' );
+                    $company_name = ( isset( $value['cname'] ) ? $value['cname'] : '' );
                 
-                        if(!empty($value) || !empty($full_name) || !empty($email_address) || !empty($company_name) ){
-                        ?>
-                            <div class="col-md-6 testimonial_css">
-                                <div class="card bg-light card_css">
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?php echo get_the_title(); ?></h5><hr>
-                                        <?php echo get_the_content(); ?>
-                                        <div class="card-footer">
-                                            <div class="row">
-                                            <div class="col-md-4">
-                                                <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
-                                            </div>
-                                            <div class="col-md-8">
-                                                <small class="text-muted"><?php echo ( ($get_selected_option['name_check']) ? $name : '' ); ?>
-                                                        <?php echo ( ($get_selected_option['email_check']) ? $email : '' );  ?>
-                                                    <b> <?php echo ( ($get_selected_option['company_name_check']) ? $company_name : '' ); ?></b>
-                                                </small>
-                                            </div>
-                                            </div>
+                    ?>
+                        <div class="col-md-6 testimonial_css">
+                            <div class="card bg-light card_css">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?php echo get_the_title(); ?></h5><hr>
+                                    <?php echo get_the_content(); ?>
+                                    <div class="card-footer">
+                                        <div class="row">
+                                        <div class="col-md-4">
+                                            <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <?php
+                                                if ( $get_selected_option['name_check'] || $get_selected_option['email_check'] || $get_selected_option['company_name_check'] ) {
+                                                    ?>
+                                                        <small class="text-muted"><?php echo $name; ?><br>
+                                                            <?php echo $email;  ?><br>
+                                                            <b> <?php echo $company_name; ?></b>
+                                                        </small>
+                                                    <?php
+                                                }
+                                            ?>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                        <?php
-                        }
+                        </div>
+                    <?php
                 }
                 wp_reset_postdata();
             }else{
@@ -301,28 +307,27 @@ function testifybox_shortcode_lists(){
     $result = ob_get_clean();
     return $result;
 }
-add_shortcode( 'all_testimonail_list','testifybox_shortcode_lists' );
-
+add_shortcode( 'testifybox_list','testifybox_shortcode_lists' );
 
 /**
  * 
- * Shortcode to display testimonials according to category
+ * Shortcode to display testimonials according to category.
  * 
- * @param $atts
- * @return $result
+ * @param array $atts Shortcode attributes.
+ * @return $result Shortcode output.
  */
 function testifybox_category_display( $atts ){
-
 	// Override default attributes with user attributes.
 	$short_args = shortcode_atts(
 		array(
             'categories' => '',
+            'count' => '6'
 		), $atts
 	);
 
     $args = array(
         'post_type' => 'testifybox',
-        'post' => '6',
+        'posts_per_page' => $short_args['count'],
         'tax_query' => array(
             array(
             'taxonomy' => 'taxonomy-category',
@@ -345,40 +350,41 @@ function testifybox_category_display( $atts ){
                     while ( $query->have_posts() ){
                         $query->the_post();
                         $value = get_post_meta( get_the_ID(), 'clientdetails', true );
-                        $full_name = get_post_meta( get_the_ID(), 'full_name', true );
-                        $email_address = get_post_meta( get_the_ID(), 'email_address', true );
-                        $company_name = get_post_meta( get_the_ID(), 'company_name', true );
                     
-                        $name = ( isset( $value['fname'] ) ? $value['fname'] : $full_name );
-                        $email = ( isset( $value['email'] ) ? $value['email'] : $email_address );
-                        $company_name = ( isset( $value['cname'] ) ? $value['cname'] : $company_name );
+                        $name = ( isset( $value['fname'] ) ? $value['fname'] : '' );
+                        $email = ( isset( $value['email'] ) ? $value['email'] : '' );
+                        $company_name = ( isset( $value['cname'] ) ? $value['cname'] : '' );
                     
-                            if(!empty($value) || !empty($full_name) || !empty($email_address) || !empty($company_name) ){
-                            ?>
-                                <div class="col-md-6 testimonial_css">
-                                    <div class="card bg-light card_css">
-                                        <div class="card-body">
-                                            <h5 class="card-title"><?php echo get_the_title(); ?></h5><hr>
-                                            <?php echo get_the_content(); ?>
-                                            <div class="card-footer">
-                                                <div class="row">
-                                                <div class="col-md-4">
-                                                    <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <small class="text-muted"><?php echo ( ($get_selected_option['name_check']) ? $name : '' ); ?>
-                                                        <?php echo ( ($get_selected_option['email_check']) ? $email : '' );  ?><br>
-                                                        <b> <?php echo ( ($get_selected_option['company_name_check']) ? $company_name : '' ); ?></b>
-                                                    </small>
-                                                </div>
-                                                </div>
+                        ?>
+                            <div class="col-md-6 testimonial_css">
+                                <div class="card bg-light card_css">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo get_the_title(); ?></h5><hr>
+                                        <?php echo get_the_content(); ?>
+                                        <div class="card-footer">
+                                            <div class="row">
+                                            <div class="col-md-4">
+                                                <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
+                                            </div>
+                                            <div class="col-md-8">
+                                                <?php
+                                                    if ( $get_selected_option['name_check'] || $get_selected_option['email_check'] || $get_selected_option['company_name_check'] ) {
+                                                        ?>
+                                                            <small class="text-muted"><?php echo $name; ?><br>
+                                                                <?php echo $email;  ?><br>
+                                                                <b> <?php echo $company_name; ?></b>
+                                                            </small>
+                                                        <?php
+                                                    }
+                                                ?>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                            <?php
-                        }
+                        <?php
                     }
                 }else{
                     echo 'No Testimonials Found.';
@@ -390,42 +396,14 @@ function testifybox_category_display( $atts ){
     $result = ob_get_clean();
     return $result;
 }
-add_shortcode( 'category_testinomial', 'testifybox_category_display'  );
+add_shortcode( 'testifybox_category', 'testifybox_category_display'  );
 
 /**
- * Shortcode to display view as slider.
- * @return $result
- */
-function testifybox_slider(){
-    $args = array(
-        'post_type'      => 'testifybox',
-        'posts_per_page' => 10,
-        'publish_status' => 'publish',
-    );
-
-    $query = new WP_Query( $args );
-   
-    ob_start();
-    ?>
-        <div class="container">
-        <div class="row">
-    <?php
-
-    include('templates/testifybox-slider-view.php');
-    ?>
-    </div>
-    </div>
-    <?php
-    $result = ob_get_clean();
-    return $result;
-}
-add_shortcode( 'testimonial_slider', 'testifybox_slider' );
-
-/**
- * Creates submenu 'Easy Settings'
+ * Creates submenu 'Easy Settings'.
+ * 
+ * @return void
  */
 function testifybox_add_sub_menu(){
-    
     add_submenu_page(
         'edit.php?post_type=testifybox', //parent slug.
         'Easy Settings', //page title.
@@ -438,15 +416,15 @@ function testifybox_add_sub_menu(){
 add_action( 'admin_menu', 'testifybox_add_sub_menu' );
 
 /**
- * Callback function for sub menu 'Easy Settings'
- * testifybox_menu_option
+ * Callback function for sub menu 'Easy Settings'.
+ * testifybox_menu_option.
  */
 function testifybox_menu_option(){
     $get_checked_values = get_option( 'save_value' );
-    $name_checked = ( ($get_checked_values['name_check']) ? '1' : '0' );
-    $email_checked = ( ($get_checked_values['email_check']) ? '1' : '0' );
-    $company_name_checked = ( ($get_checked_values['company_name_check']) ? '1' : '0' );
-    $rating_checked = ( ($get_checked_values['rating_check']) ? '1' : '0' );
+    $name_checked = ( ( $get_checked_values['name_check'] ) ? '1' : '0' );
+    $email_checked = ( ( $get_checked_values['email_check'] ) ? '1' : '0' );
+    $company_name_checked = ( ( $get_checked_values['company_name_check'] ) ? '1' : '0' );
+    $rating_checked = ( ( $get_checked_values['rating_check'] ) ? '1' : '0' );
 
     ?>
         <div class="container">
@@ -471,7 +449,7 @@ function testifybox_menu_option(){
                         <input type="checkbox" id="rating_check" name="rating_check" <?php checked( 1, $rating_checked );  ?> >
                         <label class="form-check-label" for="rating_check">Enable rating in the view</label>
                     </div><br>
-                    <?php wp_nonce_field( 'testimonial_setting_form', 'testimonial_setting_nonce' ); ?>
+                    <?php wp_nonce_field( 'testifybox_setting_form', 'testifybox_setting_nonce' ); ?>
 
                     <input type="submit" name="save_settings" id="save_settings" value="Save Changes">
                 </form>
@@ -479,18 +457,17 @@ function testifybox_menu_option(){
             </div>
         </div>
     <?php
-    
 }
 
 /**
- * Saves values to DB 'wp_option' table
+ * Saves values to DB 'wp_option' table.
  * 
- * @param $_POST
+ * @return void
  */
 function testifybox_save_setings(){
     if(isset($_POST['save_settings']))
     {
-        if( ! wp_verify_nonce( $_POST['testimonial_setting_nonce'], 'testimonial_setting_form' ) ) {
+        if( ! wp_verify_nonce( $_POST['testifybox_setting_nonce'], 'testifybox_setting_form' ) ) {
             return;
         };
         $postdata = [];
@@ -511,7 +488,6 @@ add_action( 'admin_init', 'testifybox_save_setings' );
  * @return $result Testimonial form output.
  */
 function testifybox_form(){
-
     ob_start();
     ?>
     <form method="POST">
@@ -565,7 +541,7 @@ function testifybox_form(){
         
     return $result;
 }
-add_shortcode( 'add_testimonial', 'testifybox_form' );
+add_shortcode( 'testifybox_testimonial', 'testifybox_form' );
 
 /**
  * Save testimonial form data to database in wp_post and wp_postmeta table
@@ -578,25 +554,27 @@ function testifybox_save_form(){
             return;
         };
         $postdata = [];
-        $postdata['full_name'] = sanitize_text_field($_POST['full_name']);
-        $postdata['email_address'] = sanitize_text_field($_POST['email_address']);
-        $postdata['company_name'] = sanitize_text_field($_POST['company_name']);
-        $postdata['company_website'] = sanitize_text_field($_POST['company_website']);
-        $postdata['rating'] = sanitize_text_field($_POST['rating']);
+        $postdata['fname'] = sanitize_text_field( wp_unslash( $_POST['full_name'] ) );
+        $postdata['email'] = sanitize_text_field( wp_unslash( $_POST['email_address'] ) );
+        $postdata['cname'] = sanitize_text_field( wp_unslash( $_POST['company_name'] ) );
+        $postdata['cwebsite'] = sanitize_text_field( wp_unslash( $_POST['company_website'] ) );
+        $postdata['rating'] = sanitize_text_field( wp_unslash( $_POST['rating'] ) );
 
-        $testimonial_heading = sanitize_text_field($_POST['testimonial_heading']);
-        $testimonial_textarea = sanitize_textarea_field($_POST['testimonial_textarea']);
+        $data = [];
+        $data['clientdetails'] = $postdata;
+
+        $testimonial_heading = sanitize_text_field( wp_unslash( $_POST['testimonial_heading'] ) );
+        $testimonial_textarea = sanitize_textarea_field( wp_unslash( $_POST['testimonial_textarea'] ) );
        
         $args = array(
             'post_title' => $testimonial_heading,
             'post_content' => $testimonial_textarea,
             'post_status' => 'publish',
             'post_type' => 'testifybox',
-            'meta_input' => $postdata, //wp_postmeta values.
+            'meta_input' => $data, //wp_postmeta values.
         );
 
         $save_testimonial = wp_insert_post($args);
-
 
         if ( $save_testimonial ) {
             wp_redirect( home_url( $_POST['_wp_http_referer'] ) );
@@ -606,29 +584,6 @@ function testifybox_save_form(){
 }
 add_action( 'init', 'testifybox_save_form' );
 
-/**
- * displays meta data/values to admin table
- */
-function testifybox_new_column_value( $column_name, $post_ID ) {
-    if ($column_name == 'fname') {
-        $full_name = get_post_meta($post_ID, 'full_name', true);
-        echo $full_name;
-    }
-    if ($column_name == 'email') {
-        $email_address = get_post_meta($post_ID, 'email_address', true);
-        echo $email_address;
-    }
-    if ($column_name == 'cname') {
-        $company_name = get_post_meta($post_ID, 'company_name', true);
-        echo $company_name;
-    }
-    if ($column_name == 'cwebsite') {
-        $company_website = get_post_meta($post_ID, 'company_website', true);
-        echo $company_website;
-    }
-}
-add_action( 'manage_testifybox_posts_custom_column', 'testifybox_new_column_value', 10, 2 );
-  
 /**
  * Enqueue styles and scripts.
  */
@@ -681,47 +636,43 @@ function testifybox_display_option( $atts ){
     ?>
         <div class="container">
             <div class="row">
-            <?php
-            $get_selected_option = get_option( 'save_value' );
-            
-            if ( $display_args['view'] === 'slider' ) {
-                ?>
-                <div class="swiper mySwiper">
-                    <div class="swiper-wrapper">
                 <?php
-            }
-
-                if ( $query->have_posts() ){
-                    while ( $query->have_posts() ){
-                        $query->the_post();
-                        $value = get_post_meta( get_the_ID(), 'clientdetails', true );
-                        $full_name = get_post_meta( get_the_ID(), 'full_name', true );
-                        $email_address = get_post_meta( get_the_ID(), 'email_address', true );
-                        $company_name = get_post_meta( get_the_ID(), 'company_name', true );
-                        $rating = get_post_meta( get_the_ID(), 'rating', true );
-                            
-                        $name = ( isset( $value['fname'] ) ? $value['fname'] : $full_name );
-                        $email = ( isset( $value['email'] ) ? $value['email'] : $email_address );
-                        $company_name = ( isset( $value['cname'] ) ? $value['cname'] : $company_name );
-                        
-                        if ( $display_args['view'] === 'slider' ) {
-                            include('templates/testifybox-slider-view.php');
-                        } elseif ( $display_args['view'] === 'list' ) {
-                            include('templates/testifybox-list-view.php');
-                        } elseif ( $display_args['view'] === 'grid' ) {
-                            include('templates/testifybox-grid-view.php');
-                        }
+                    if ( $display_args['view'] === 'slider' ) {
+                        ?>
+                        <div class="swiper mySwiper">
+                            <div class="swiper-wrapper">
+                        <?php
                     }
-                    wp_reset_postdata();
-                }
-                if ( $display_args['view'] === 'slider' ) {
-                    ?>
+
+                    if ( $query->have_posts() ){
+                        while ( $query->have_posts() ){
+                            $query->the_post();
+                            $value = get_post_meta( get_the_ID(), 'clientdetails', true );
+
+                            $name = ( isset( $value['fname'] ) ? $value['fname'] : '' );
+                            $email = ( isset( $value['email'] ) ? $value['email'] : '' );
+                            $company_name = ( isset( $value['cname'] ) ? $value['cname'] : '' );
+                            
+                            if ( $display_args['view'] === 'slider' ) {
+                                include('templates/testifybox-slider-view.php');
+                            } elseif ( $display_args['view'] === 'list' ) {
+                                include('templates/testifybox-list-view.php');
+                            } elseif ( $display_args['view'] === 'grid' ) {
+                                include('templates/testifybox-grid-view.php');
+                            }
+                        }
+                        wp_reset_postdata();
+                    }else{
+                        echo 'No Testimonials Found.';
+                    }
+                    if ( $display_args['view'] === 'slider' ) {
+                        ?>
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
                     </div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-                </div>
-                <?php
-                }
+                    <?php
+                    }
                 ?>
             </div>
         </div>
@@ -731,4 +682,4 @@ function testifybox_display_option( $atts ){
     return $result;
 
 }
-add_shortcode( 'display_option', 'testifybox_display_option'  );
+add_shortcode( 'testifybox_view', 'testifybox_display_option'  );

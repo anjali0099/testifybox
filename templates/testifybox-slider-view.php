@@ -9,10 +9,16 @@
                         <img src="https://img.lovepik.com/element/40128/7461.png_1200.png" alt="Avatar" class="img_avatar">
                     </div>
                     <div class="col-md-8">
-                        <small class="text-muted"><?php echo ( ($get_selected_option['name_check']) ? $name : '' ); ?><br>
-                            <?php echo ( ($get_selected_option['email_check']) ? $email : '' );  ?><br>
-                            <b> <?php echo ( ($get_selected_option['company_name_check']) ? $company_name : '' ); ?></b>
-                        </small>
+                        <?php
+                            if ( $get_selected_option['name_check'] || $get_selected_option['email_check'] || $get_selected_option['company_name_check'] ) {
+                                ?>
+                                    <small class="text-muted"><?php echo $name; ?><br>
+                                        <?php echo $email;  ?><br>
+                                        <b> <?php echo $company_name; ?></b>
+                                    </small>
+                                <?php
+                            }
+                        ?>
                     </div>
                 </div>
             </div>
